@@ -14,16 +14,40 @@ if (major < 20) {
 require('dotenv').config({ path: '.env' });
 require('dotenv').config({ path: '.env.local' });
 
-mongoose.connect(process.env.DATABASE);
-
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 
-mongoose.connection.on('error', (error) => {
-  console.log(
-    `1. 🔥 Common Error caused issue → : check your .env file first and add your mongodb url`
-  );
-  console.error(`2. 🚫 Error → : ${error.message}`);
+const options = {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  connectTimeoutMS: 10000,
+  retryWrites: true,
+};
+async function connectWithRetry(retries = 5, delay = 2000) {
+  try {
+    await mongoose.connect(process.env.DATABASE, options);
+    console.log('MongoDB connected');
+  } catch (err) {
+    console.error(`MongoDB connection failed: ${err.message}. Retrying in ${delay} ms...`);
+    if (retries > 0) {
+      setTimeout(() => connectWithRetry(retries - 1, delay * 2), delay);
+    } else {
+      console.error('MongoDB connection retries exhausted. Exiting process.');
+      process.exit(1);
+    }
+  }
+}
+mongoose.connection.on('disconnected', () => {
+  console.warn('MongoDB disconnected. Will attempt to reconnect...');
 });
+mongoose.connection.on('reconnected', () => {
+  console.log('MongoDB reconnected');
+});
+mongoose.connection.on('error', (err) => {
+  console.error('MongoDB connection error:', err);
+});
+connectWithRetry();
 
 const modelsFiles = globSync('./src/models/**/*.js');
 

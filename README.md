@@ -1,120 +1,32 @@
-<div align="center">
-    <a href="https://www.idurarapp.com/">
-  <img src="https://avatars.githubusercontent.com/u/50052356?s=200&v=4" width="128px" />
-    </a>
-    <h1>Open Source ERP / CRM Accounting Invoice Quote</h1>
-    <p align="center">
-        <p>IDURAR ERP CRM | Simple To Use</p>
-    </p>
-    
+## Prerequisites
+
+`kubectl` and `minikube` must be installed
+
+## K8s
+
+1. `minikube start`
+2. `minikube addons enable ingress` (аддон нужен для роутинга внутри кластера + для доступа к подам извне)
+3. `minikube dashboard` (запускаем дашбоард)
+4. `minikube tunnel` (запускает тоннель, чтобы к подам можно было стучаться извне)
+5. `docker-compose build`
+6. move images inside minikube
+   1. `docker image ls`
+   2. `minikube image ls`
+   3. `minikube image load deployment-risks-frontend`
+   4. `minikube image load deployment-risks-backend`
+   5. `minikube image load deployment-risks-pdf-worker`
+   6. `minikube image load mongo`
+   7. `minikube image load redis`
+7. `kubectl apply -f .` (одной командой запускаем все yaml-файлы для k8s)
+   1. `kubectl apply -f mongo-deployment.yaml && kubectl apply -f mongo-service.yaml && kubectl apply -f mongo-pvc.yaml`
+   2. `kubectl apply -f redis-deployment.yaml && kubectl apply -f redis-service.yaml`
+   3. `kubectl apply -f pdf-storage-pvc.yaml && kubectl apply -f pdf-worker-deployment.yaml`
+   4. `kubectl apply -f backend-deployment.yaml && kubectl apply -f backend-service.yaml && kubectl apply -f backend-ingress.yaml`
+   5. `kubectl apply -f frontend-deployment.yaml && kubectl apply -f frontend-service.yaml && kubectl apply -f frontend-ingress.yaml`
+8. `echo -e "127.0.0.1 frontend.localhost\n127.0.0.1 backend.localhost" | sudo tee -a /etc/hosts` (обновляем `/etc/hosts`, чтобы стучаться к подам извне)
+
 
 ```
- Give a Star ⭐️ & Fork to this project ... Happy coding! 🤩`
+# load all images with one command
+minikube image load deployment-risks-frontend && minikube image load deployment-risks-backend && minikube image load deployment-risks-pdf-worker && minikube image load mongo && minikube image load redis 
 ```
-
-IDURAR is Open Source ERP / CRM (Invoice / Quote / Accounting ) Based on Advanced Mern Stack (Node.js / Express.js / MongoDb / React.js ) with Ant Design (AntD) and Redux
-
-</div>
-
-**🚀 Self-hosted Entreprise Version** : [https://cloud.idurarapp.com](https://cloud.idurarapp.com)
-
-
-## ⚠️ SECURITY WARNING for Developers & Web Agencies & Blockchain Developer
-
-We’ve been made aware of scammer contacting developers or web agencies, asking them to develop and run malicious or altered versions of IDURAR software.
-
-🚫 NEVER trust emails, messages, or DMs claiming to be from IDURAR unless they come from our official domain: **@idurarapp.com**  
-🚫 DO NOT run unknown versions of the app sent via email or third-party GitHub repositories.
-
-✅ Official GitHub Repo: [https://github.com/idurar/idurar-erp-crm](https://github.com/idurar/idurar-erp-crm)  
-✅ Official Website: [https://idurarapp.com](https://idurarapp.com)
-
-🚨 WARNING: We have been informed that scammers are misusing this open-source project and falsely claiming to represent IDURAR.AI.
-
-⚠️ Only trust official information, updates, and licenses from our official website: [https://idurarapp.com](https://idurarapp.com). and official github repo: https://github.com/idurar/idurar-erp-crm
-We do **not** auhorize any third party to sell, license, or represent our software or brand.
-
-🚫 Never run versions of IDURAR downloaded from unofficial GitHub repositories.  
-These may be **fake**, **malicious**, or used to scam users.
-
-✅ Stay safe. Verify the source and always contact us through our website if in doubt.
-
-## Features :
-
-Invoice Management
-
-Payment Management
-
-Quote Management
-
-Customer Management
-
-Ant Design Framework(AntD) 🐜
-
-Based on Mern Stack (Node.js / Express.js / MongoDb / React.js ) 👨‍💻
-
-### May i can use IDURAR for Commercial use :
-
-- Yes You can use IDURAR for free for personal or Commercial use.
-
-## Our Sponsors
-
-  <a href="https://m.do.co/c/4ead8370b905?ref=idurarapp.com">
-    <img src="https://opensource.nyc3.cdn.digitaloceanspaces.com/attribution/assets/PoweredByDO/DO_Powered_by_Badge_blue.svg" width="201px">
-  </a>
-
-#
-
-<img width="1403" alt="Open Source ERP CRM" src="https://github.com/idurar/idurar-erp-crm/assets/136928179/a6712286-7ca6-4822-8902-fb7523533ee8">
-
-## Free Open Source ERP / CRM App
-
-IDURAR is Open "Fair-Code" Source ERP / CRM (Invoice / Inventory / Accounting / HR) Based on Mern Stack (Node.js / Express.js / MongoDb / React.js ) with Ant Design (AntD) and Redux
-
-
-## Getting started
-
-1.[Clone the repository](INSTALLATION-INSTRUCTIONS.md#step-1-clone-the-repository)
-
-2.[Create Your MongoDB Account and Database Cluster](INSTALLATION-INSTRUCTIONS.md#Step-2-Create-Your-MongoDB-Account-and-Database-Cluster)
-
-3.[Edit the Environment File](INSTALLATION-INSTRUCTIONS.md#Step-3-Edit-the-Environment-File)
-
-4.[Update MongoDB URI](INSTALLATION-INSTRUCTIONS.md#Step-4-Update-MongoDB-URI)
-
-5.[Install Backend Dependencies](INSTALLATION-INSTRUCTIONS.md#Step-5-Install-Backend-Dependencies)
-
-6.[Run Setup Script](INSTALLATION-INSTRUCTIONS.md#Step-6-Run-Setup-Script)
-
-7.[Run the Backend Server](INSTALLATION-INSTRUCTIONS.md#Step-7-Run-the-Backend-Server)
-
-8.[Install Frontend Dependencies](INSTALLATION-INSTRUCTIONS.md#Step-8-Install-Frontend-Dependencies)
-
-9.[Run the Frontend Server](INSTALLATION-INSTRUCTIONS.md#Step-9-Run-the-Frontend-Server)
-
-## Contributing
-
-1.[How to contribute](https://github.com/idurar/idurar-erp-crm/blob/master/CONTRIBUTING.md#how-to-contribute)
-
-2.[Reporting issues](https://github.com/idurar/idurar-erp-crm/blob/master/CONTRIBUTING.md#reporting-issues)
-
-3.[Working on issues ](https://github.com/idurar/idurar-erp-crm/blob/master/CONTRIBUTING.md#working-on-issues)
-
-4.[Submitting pull requests](https://github.com/idurar/idurar-erp-crm/blob/master/CONTRIBUTING.md#submitting-pull-requests)
-
-5.[Commit Guidelines](https://github.com/idurar/idurar-erp-crm/blob/master/CONTRIBUTING.md#commit-guidelines)
-
-6.[Coding Guidelines](https://github.com/idurar/idurar-erp-crm/blob/master/CONTRIBUTING.md#coding-guidelines)
-
-7.[Questions](https://github.com/idurar/idurar-erp-crm/blob/master/CONTRIBUTING.md#questions)
-
-
-## Show your support
-
-Dont forget to give a ⭐️ to this project ... Happy coding!
-
-**🚀 Self-hosted Entreprise Version** : [https://cloud.idurarapp.com](https://cloud.idurarapp.com)
-
-## License
-
-IDURAR is Free Open Source Released under the GNU Affero General Public License v3.0.
