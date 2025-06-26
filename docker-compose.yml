@@ -17,12 +17,9 @@ services:
       - PDF_OUTPUT_DIR=./pdf-storage
       - PDF_STORAGE_PATH=/usr/src/app/pdf-storage
       - JWT_SECRET=secret_key_1234
-
     command: sh -c "npm run setup && npm run dev"
-
     networks:
       - server-mongo
-
     depends_on:
       - mongo
       - redis
@@ -54,12 +51,11 @@ services:
       - ./frontend:/usr/src/app
       - /usr/src/app/node_modules
     ports:
-      - "3000:3000"
+      - "4000:4000"
     environment:
       - NODE_ENV=development
       - REACT_APP_API_URL=http://backend:8888/api
       - NODE_OPTIONS=--openssl-legacy-provider
-
     depends_on:
       - backend
 
@@ -78,9 +74,68 @@ services:
     networks:
       - server-mongo
 
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - server-mongo
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - server-mongo
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - server-mongo
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./promtail:/etc/promtail
+      - /var/log:/var/log
+      - ./logs:/logs
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - server-mongo
+
 volumes:
   mongodb_data:
   pdf_storage:
+  prometheus_data:
+  grafana_data:
+  loki_data:
 
 networks:
   server-mongo:

@@ -10,6 +10,8 @@ const coreApiRouter = require('./routes/coreRoutes/coreApi');
 const coreDownloadRouter = require('./routes/coreRoutes/coreDownloadRouter');
 const corePublicRouter = require('./routes/coreRoutes/corePublicRouter');
 const adminAuth = require('./controllers/coreControllers/adminAuth');
+const { metricsMiddleware, register } = require('./utils/metrics');
+const logger = require('./utils/logger');
 
 const errorHandlers = require('./handlers/errorHandlers');
 const erpApiRouter = require('./routes/appRoutes/appApi');
@@ -24,6 +26,38 @@ app.use(
     credentials: true,
   })
 );
+
+app.use(metricsMiddleware);
+
+app.get('/metrics', async (req, res) => {
+  res.set('Content-Type', register.contentType);
+  res.end(await register.metrics());
+});
+
+// Middleware to log all requests
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    const duration = Date.now() - start;
+    logger.info(`${req.method} ${req.originalUrl} ${res.statusCode} ${duration}ms`, {
+      method: req.method,
+      url: req.originalUrl,
+      status: res.statusCode,
+      duration: duration
+    });
+  });
+  next();
+});
+
+app.use((err, req, res, next) => {
+  logger.error(`Error processing request: ${err.message}`, {
+    error: err.stack,
+    method: req.method,
+    url: req.originalUrl
+  });
+
+  res.status(500).json({ error: 'Internal Server Error' });
+});
 
 app.use(cookieParser());
 app.use(express.json());
