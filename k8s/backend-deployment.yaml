@@ -1,0 +1,57 @@
+# backend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: deployment-risks-backend
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8888
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: DATABASE
+              value: "mongodb://mongo:27017/local-idurar-erp-crp"
+            - name: PORT
+              value: "8888"
+            - name: NODE_OPTIONS
+              value: "--openssl-legacy-provider"
+            - name: JWT_SECRET
+              value: "secret_key_1234"
+            - name: PUBLIC_SERVER_FILE
+              value: http://backend.localhost/
+            - name: PDF_OUTPUT_DIR
+              value: ./pdf-storage
+            - name: REDIS_HOST
+              value: redis
+            - name: REDIS_PORT
+              value: "6379"
+            - name: PDF_STORAGE_PATH
+              value: "/usr/src/app/pdf-storage"
+          command: ["sh", "-c", "npm run setup && npm run dev"]
+          volumeMounts:
+            - name: pdf-storage
+              mountPath: /usr/src/app/pdf-storage
+          resources:
+            limits:
+              memory: "1Gi"
+              cpu: "500m"
+            requests:
+              memory: "512Mi"
+              cpu: "250m"
+      volumes:
+        - name: pdf-storage
+          persistentVolumeClaim:
+            claimName: pdf-storage-pvc

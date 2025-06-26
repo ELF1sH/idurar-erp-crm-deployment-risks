@@ -1,10 +1,11 @@
 const mongoose = require('mongoose');
-
 const Model = mongoose.model('Invoice');
 
 const { calculate } = require('@/helpers');
 const { increaseBySettingKey } = require('@/middlewares/settings');
 const schema = require('./schemaValidate');
+
+const pdfQueue = require('@/queues/pdfQueue'); // подключаем очередь
 
 const create = async (req, res) => {
   let body = req.body;
@@ -26,14 +27,13 @@ const create = async (req, res) => {
   let taxTotal = 0;
   let total = 0;
 
-  //Calculate the items array with subTotal, total, taxTotal
-  items.map((item) => {
-    let total = calculate.multiply(item['quantity'], item['price']);
-    //sub total
-    subTotal = calculate.add(subTotal, total);
-    //item total
-    item['total'] = total;
+  // Вычисление стоимости всех товаров
+  items.forEach((item) => {
+    let itemTotal = calculate.multiply(item['quantity'], item['price']);
+    subTotal = calculate.add(subTotal, itemTotal);
+    item['total'] = itemTotal;
   });
+
   taxTotal = calculate.multiply(subTotal, taxRate / 100);
   total = calculate.add(subTotal, taxTotal);
 
@@ -43,31 +43,38 @@ const create = async (req, res) => {
   body['items'] = items;
 
   let paymentStatus = calculate.sub(total, discount) === 0 ? 'paid' : 'unpaid';
-
   body['paymentStatus'] = paymentStatus;
   body['createdBy'] = req.admin._id;
 
-  // Creating a new document in the collection
+  // Создаём документ
   const result = await new Model(body).save();
-  const fileId = 'invoice-' + result._id + '.pdf';
-  const updateResult = await Model.findOneAndUpdate(
-    { _id: result._id },
-    { pdf: fileId },
-    {
-      new: true,
-    }
-  ).exec();
-  // Returning successfull response
 
+  // Переход на асинхронную генерацию PDF через очередь
+  try {
+    await pdfQueue.add(
+      { invoiceId: result._id.toString() },
+      {
+        attempts: 5,
+        backoff: {
+          type: 'exponential',
+          delay: 2000,
+        },
+      }
+    );
+  } catch (err) {
+    console.error('Не удалось поставить задачу генерации PDF в очередь:', err);
+  }
+
+  // Увеличиваем номер счёта
   increaseBySettingKey({
     settingKey: 'last_invoice_number',
   });
 
-  // Returning successfull response
+  // Отправляем ответ пользователю сразу
   return res.status(200).json({
     success: true,
-    result: updateResult,
-    message: 'Invoice created successfully',
+    result,
+    message: 'Счёт создан. PDF будет сгенерирован автоматически.',
   });
 };
 
