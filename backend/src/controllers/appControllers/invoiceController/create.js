@@ -5,7 +5,7 @@ const { calculate } = require('@/helpers');
 const { increaseBySettingKey } = require('@/middlewares/settings');
 const schema = require('./schemaValidate');
 
-const pdfQueue = require('@/queues/pdfQueue'); // подключаем очередь
+const pdfQueue = require('@/queues/pdfQueue');
 
 const create = async (req, res) => {
   let body = req.body;
@@ -27,7 +27,6 @@ const create = async (req, res) => {
   let taxTotal = 0;
   let total = 0;
 
-  // Вычисление стоимости всех товаров
   items.forEach((item) => {
     let itemTotal = calculate.multiply(item['quantity'], item['price']);
     subTotal = calculate.add(subTotal, itemTotal);
@@ -46,7 +45,6 @@ const create = async (req, res) => {
   body['paymentStatus'] = paymentStatus;
   body['createdBy'] = req.admin._id;
 
-  // Создаём документ
   const result = await new Model(body).save();
 
   // Переход на асинхронную генерацию PDF через очередь
@@ -65,16 +63,14 @@ const create = async (req, res) => {
     console.error('Не удалось поставить задачу генерации PDF в очередь:', err);
   }
 
-  // Увеличиваем номер счёта
   increaseBySettingKey({
     settingKey: 'last_invoice_number',
   });
 
-  // Отправляем ответ пользователю сразу
   return res.status(200).json({
     success: true,
     result,
-    message: 'Счёт создан. PDF будет сгенерирован автоматически.',
+    message: 'Счет создан. PDF будет сгенерирован автоматически.',
   });
 };
 
