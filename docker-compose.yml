@@ -1,0 +1,141 @@
+services:
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+      - pdf_storage:/usr/src/app/pdf-storage
+    ports:
+      - "8888:8888"
+    environment:
+      - NODE_ENV=development
+      - DATABASE=mongodb://mongo:27017/local-idurar-erp-crp
+      - PORT=8888
+      - NODE_OPTIONS=--openssl-legacy-provider
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PDF_OUTPUT_DIR=./pdf-storage
+      - PDF_STORAGE_PATH=/usr/src/app/pdf-storage
+      - JWT_SECRET=secret_key_1234
+    command: sh -c "npm run setup && npm run dev"
+    networks:
+      - server-mongo
+    depends_on:
+      - mongo
+      - redis
+
+  pdf-worker:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.pdf-worker
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+      - pdf_storage:/usr/src/app/pdf-storage
+    environment:
+      - NODE_ENV=development
+      - DATABASE=mongodb://mongo:27017/local-idurar-erp-crp
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - PDF_OUTPUT_DIR=/usr/src/app/pdf-storage
+    command: node src/workers/pdfWorker.js
+    depends_on:
+      - redis
+      - mongo
+    networks:
+      - server-mongo
+
+  frontend:
+    build: ./frontend
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://backend:8888/api
+      - NODE_OPTIONS=--openssl-legacy-provider
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - server-mongo
+
+  redis:
+    image: redis:7.2-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - server-mongo
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - server-mongo
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - server-mongo
+
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "3100:3100"
+    volumes:
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - server-mongo
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - ./promtail:/etc/promtail
+      - /var/log:/var/log
+      - ./logs:/logs
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - server-mongo
+
+volumes:
+  mongodb_data:
+  pdf_storage:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+
+networks:
+  server-mongo:

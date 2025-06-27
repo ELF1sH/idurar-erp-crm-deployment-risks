@@ -1,0 +1,30 @@
+# frontend-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+        - name: frontend
+          image: deployment-risks-frontend
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 3000
+          env:
+            - name: NODE_ENV
+              value: "development"
+            - name: REACT_APP_API_URL
+              value: "http://backend.localhost/api"
+            - name: NODE_OPTIONS
+              value: "--openssl-legacy-provider"
+            - name: VITE_FILE_BASE_URL
+              value: "http://backend.localhost/"

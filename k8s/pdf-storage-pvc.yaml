@@ -1,0 +1,12 @@
+# pdf-storage-pvc.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pdf-storage-pvc
+spec:
+  accessModes:
+    - ReadWriteMany  # Using ReadWriteMany since the volume is shared between backend and pdf-worker
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: standard  # Use appropriate storage class for your cluster
