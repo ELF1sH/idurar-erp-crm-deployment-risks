@@ -38,27 +38,8 @@ const breaker = (originalFunction) => {
     });
   });
 
-  circuitBreaker.on('success', async (result) => {
+  circuitBreaker.on('success', async () => {
     console.log('Письмо успешно отправлено');
-    // console.log('result', result)
-    //
-    // try {
-    //   const meta = result.meta;
-    //
-    //   if (!meta || !meta.email || !meta.subject) {
-    //     console.warn('Нет данных для очистки Outbox');
-    //     return;
-    //   }
-    //
-    //   const deleted = await Outbox.deleteMany({
-    //     email: meta.email,
-    //     subject: meta.subject,
-    //     type: meta.type || 'invoice',
-    //     status: 'pending',
-    //   });
-    // } catch (error) {
-    //   console.error('Ошибка при очистке Outbox', error);
-    // }
   });
 
   circuitBreaker.on('failure', (error) => {
