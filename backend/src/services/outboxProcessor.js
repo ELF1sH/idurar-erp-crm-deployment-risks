@@ -1,5 +1,6 @@
 const Outbox = require('@/models/appModels/Outbox');
 const sendMail = require("@/services/sendMail");
+const logger = require("@/utils/logger");
 
 class OutboxProcessor {
   constructor() {
@@ -23,6 +24,12 @@ class OutboxProcessor {
         attempts: { $lt: this.maxAttempts }
       }).limit(this.batchSize);
 
+      logger.info('[Outbox] Starting handling emails');
+      logger.debug('[Outbox] Starting handling emails', {
+        total: pendingEmails.length,
+        pendingEmails,
+      })
+
       console.log(`Найдено ${pendingEmails.length} писем в обработке`);
 
       for (const email of pendingEmails) {
@@ -41,10 +48,25 @@ class OutboxProcessor {
             lastAttempt: new Date()
           });
 
+          logger.info('[Outbox] The email has been successfully handled');
+          logger.debug('[Outbox] The email has been successfully handled', {
+            email: email.email,
+            name: email.name,
+            subject: email.subject,
+            link: email.link,
+            type: email.type,
+            htmlContent: email.htmlContent
+          })
+
           console.log(`Письмо ${email._id} успешно обработано`);
 
         } catch (error) {
           console.error(`Ошибка обработки письма ${email._id}:`, error);
+
+          logger.error('[Outbox] The email has not been handled' ,{
+            email,
+            error,
+          })
 
           await Outbox.findByIdAndUpdate(email._id, {
             attempts: email.attempts + 1,
