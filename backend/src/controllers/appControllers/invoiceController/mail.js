@@ -2,7 +2,7 @@ const {SendInvoice} = require("@/emailTemplate/SendEmailTemplate");
 const sendMail = require("@/services/sendMail");
 
 const mail = async (req, res) => {
-  const email = 'skachal.off@yandex.ru'
+  const email = 'lezhnin495@gmail.com';
   const name = 'Doe'
   const subject = 'Invoice | idurar'
   const link = "induar.com";

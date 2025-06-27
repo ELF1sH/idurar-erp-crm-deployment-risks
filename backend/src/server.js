@@ -29,24 +29,35 @@ async function connectWithRetry(retries = 5, delay = 2000) {
   try {
     await mongoose.connect(process.env.DATABASE, options);
     console.log('MongoDB подключился');
+
+    logger.info('[server.js] MongoDB has been successfully connected')
   } catch (err) {
     console.error(`Ошибка подключения к MongoDB: ${err.message}. Повторная попытка через ${delay} мс...`);
+    logger.error(`[server.js] Error connecting to MongoDB: ${err.message}. Another attempt in ${delay} ms...`)
     if (retries > 0) {
       setTimeout(() => connectWithRetry(retries - 1, delay * 2), delay);
     } else {
       console.error('Слишком много пытлся. MongoDB не работает, чини!!!');
+      logger.error(`[server.js] Too many attempts connecting to MongoDB: ${err.message}`);
+
       process.exit(1);
     }
   }
 }
 mongoose.connection.on('disconnected', () => {
-  console.warn('MongoDB отключился. Попытка переподключения...');
+  console.warn('[server.js] MongoDB отключился. Попытка переподключения...');
+
+  logger.warn(`MongoDB has been disconnected. Trying to reconnect`);
 });
 mongoose.connection.on('reconnected', () => {
   console.log('MongoDB переподключился');
+
+  logger.info(`[server.js] MongoDB has been successfully reconnected`)
 });
 mongoose.connection.on('error', (err) => {
   console.error('MongoDB ошибка подключения:', err);
+
+  logger.error(`[server.js] Error connecting to MongoDB: ${err.message}`);
 });
 connectWithRetry();
 
@@ -58,6 +69,7 @@ for (const filePath of modelsFiles) {
 
 // Start our app!
 const app = require('./app');
+const logger = require("@/utils/logger");
 app.set('port', process.env.PORT || 8888);
 const server = app.listen(app.get('port'), () => {
   console.log(`Express running → On PORT : ${server.address().port}`);
