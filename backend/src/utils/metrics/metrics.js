@@ -118,6 +118,7 @@ function setupMetricsEndpoint(app) {
 }
 
 module.exports = {
+  client,
   metricsMiddleware,
   register,
   errorCounter,

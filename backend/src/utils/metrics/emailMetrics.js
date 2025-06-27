@@ -1,14 +1,10 @@
-const client = require('prom-client');
-const register = new client.Registry();
-
-// Add default metrics (CPU, memory, etc.)
-client.collectDefaultMetrics({ register });
+const { client, register} = require("@/utils/metrics/metrics");
 
 // Request counter - track how many times the endpoint is called
 const emailCounter = new client.Counter({
   name: 'email_endpoint_requests_total',
   help: 'Total number of requests to the email endpoint',
-  labelNames: ['status_code', 'user_type'] // Add relevant labels
+  labelNames: []
 });
 register.registerMetric(emailCounter);
 
@@ -16,7 +12,7 @@ register.registerMetric(emailCounter);
 const emailDuration = new client.Histogram({
   name: 'email_endpoint_duration_seconds',
   help: 'Duration of email endpoint requests in seconds',
-  labelNames: ['status_code'],
+  labelNames: [],
   buckets: [0.01, 0.05, 0.1, 0.5, 1, 2.5, 5] // Define buckets in seconds
 });
 register.registerMetric(emailDuration);
@@ -34,7 +30,7 @@ register.registerMetric(emailRequestSize);
 const emailResponseSize = new client.Histogram({
   name: 'email_endpoint_response_size_bytes',
   help: 'Size of responses from the email endpoint in bytes',
-  labelNames: ['status_code'],
+  labelNames: [],
   buckets: [100, 500, 1000, 5000, 10000, 50000]
 });
 register.registerMetric(emailResponseSize);
@@ -43,7 +39,7 @@ register.registerMetric(emailResponseSize);
 const emailErrors = new client.Counter({
   name: 'email_endpoint_errors_total',
   help: 'Total number of errors in the email endpoint',
-  labelNames: ['error_type', 'error_code']
+  labelNames: ['error_type']
 });
 register.registerMetric(emailErrors);
 

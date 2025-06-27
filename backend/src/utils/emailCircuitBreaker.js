@@ -25,19 +25,7 @@ const breaker = (originalFunction) => {
       status: 'pending',
       attempts: 0,
       lastAttempt: new Date()
-    })
-
-    console.log({
-      email: params.email,
-      name: params.name,
-      subject: params.subject,
-      link: params.link,
-      type: params.type,
-      htmlContent: params.htmlContent,
-      status: 'pending',
-      attempts: 0,
-      lastAttempt: new Date()
-    })
+    });
 
     return await Outbox.create({
       email: params.email,

@@ -2,9 +2,9 @@ const Nodemailer = require('nodemailer');
 const { MailtrapTransport } = require('mailtrap');
 const circuitBreaker = require('@/utils/emailCircuitBreaker');
 const logger = require("@/utils/logger");
-const {metrics} = require("@/utils/emailMetrics");
-const {sleep} = require("@/utils/sleep");
-const {randomIntFromInterval} = require("@/utils/randomIntFromInterval");
+const {metrics} = require("@/utils/metrics/emailMetrics");
+const sleep = require("@/utils/sleep");
+const randomIntFromInterval = require("@/utils/randomIntFromInterval");
 
 const sendMailImpl = async ({ email, name, subject, link, type, htmlContent }) => {
     let endTimer;
@@ -36,21 +36,19 @@ const sendMailImpl = async ({ email, name, subject, link, type, htmlContent }) =
             category: type,
         });
 
-        // TODO:
-        // const info = await transport.sendMail({
-        //     from: sender,
-        //     to: email,
-        //     subject,
-        //     html: htmlContent,
-        //     category: type,
-        // });
+        const info = await transport.sendMail({
+            from: sender,
+            to: email,
+            subject,
+            html: htmlContent,
+            category: type,
+        });
 
-        const info = {
-            some_mock_data: 'MOCK DATA',
-            random: Math.random(),
-        }
-
-        await sleep(randomIntFromInterval(500, 2000));
+        // const info = {
+        //     some_mock_data: 'MOCK DATA',
+        //     random: Math.random(),
+        // }
+        // await sleep(randomIntFromInterval(500, 2000));
 
         logger.info('[sendMail.js] Invoice mail has been successfully sent');
         logger.debug('[sendMail.js] Invoice mail has been successfully sent', {
@@ -110,9 +108,7 @@ const sendMailImpl = async ({ email, name, subject, link, type, htmlContent }) =
         })
 
         metrics.emailErrors.inc({
-            labels: {
-                error_type: error.name || 'UnknownError',
-            }
+            error_type: error.name || 'UnknownError',
         })
 
         throw new Error('Failed to send email: ' + error.message);

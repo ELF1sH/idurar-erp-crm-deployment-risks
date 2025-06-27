@@ -15,7 +15,7 @@ const {
   metricsMiddleware,
   register,
   errorCounter,
-  setupMetricsEndpoint  } = require('./utils/metrics');
+  setupMetricsEndpoint  } = require('./utils/metrics/metrics');
 const logger = require('./utils/logger');
 
 const errorHandlers = require('./handlers/errorHandlers');
