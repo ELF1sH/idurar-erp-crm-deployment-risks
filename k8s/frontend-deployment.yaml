@@ -15,10 +15,10 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: deployment-risks-frontend
+          image: idurar-erp-crm-deployment-risks-frontend
           imagePullPolicy: Never
           ports:
-            - containerPort: 3000
+            - containerPort: 4000
           env:
             - name: NODE_ENV
               value: "development"

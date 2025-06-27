@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: pdf-worker
-          image: deployment-risks-pdf-worker
+          image: idurar-erp-crm-deployment-risks-pdf-worker
           imagePullPolicy: Never
           command: ["node", "src/workers/pdfWorker.js"]
           env:

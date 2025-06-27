@@ -12,9 +12,9 @@
 6. move images inside minikube
    1. `docker image ls`
    2. `minikube image ls`
-   3. `minikube image load deployment-risks-frontend`
-   4. `minikube image load deployment-risks-backend`
-   5. `minikube image load deployment-risks-pdf-worker`
+   3. `minikube image load idurar-erp-crm-deployment-risks-frontend`
+   4. `minikube image load idurar-erp-crm-deployment-risks-backend`
+   5. `minikube image load idurar-erp-crm-deployment-risks-pdf-worker`
    6. `minikube image load mongo`
    7. `minikube image load redis`
 7. `kubectl apply -f .` (одной командой запускаем все yaml-файлы для k8s)
@@ -28,5 +28,5 @@
 
 ```
 # load all images with one command
-minikube image load deployment-risks-frontend && minikube image load deployment-risks-backend && minikube image load deployment-risks-pdf-worker && minikube image load mongo && minikube image load redis 
+minikube image load idurar-erp-crm-deployment-risks-frontend && minikube image load idurar-erp-crm-deployment-risks-backend && minikube image load idurar-erp-crm-deployment-risks-pdf-worker && minikube image load mongo && minikube image load redis 
 ```

@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: backend
-          image: deployment-risks-backend
+          image: idurar-erp-crm-deployment-risks-backend
           imagePullPolicy: Never
           ports:
             - containerPort: 8888
