@@ -24,28 +24,29 @@ const options = {
   connectTimeoutMS: 10000,
   retryWrites: true,
 };
+
 async function connectWithRetry(retries = 5, delay = 2000) {
   try {
     await mongoose.connect(process.env.DATABASE, options);
-    console.log('MongoDB connected');
+    console.log('MongoDB подключился');
   } catch (err) {
-    console.error(`MongoDB connection failed: ${err.message}. Retrying in ${delay} ms...`);
+    console.error(`Ошибка подключения к MongoDB: ${err.message}. Повторная попытка через ${delay} мс...`);
     if (retries > 0) {
       setTimeout(() => connectWithRetry(retries - 1, delay * 2), delay);
     } else {
-      console.error('MongoDB connection retries exhausted. Exiting process.');
+      console.error('Слишком много пытлся. MongoDB не работает, чини!!!');
       process.exit(1);
     }
   }
 }
 mongoose.connection.on('disconnected', () => {
-  console.warn('MongoDB disconnected. Will attempt to reconnect...');
+  console.warn('MongoDB отключился. Попытка переподключения...');
 });
 mongoose.connection.on('reconnected', () => {
-  console.log('MongoDB reconnected');
+  console.log('MongoDB переподключился');
 });
 mongoose.connection.on('error', (err) => {
-  console.error('MongoDB connection error:', err);
+  console.error('MongoDB ошибка подключения:', err);
 });
 connectWithRetry();
 

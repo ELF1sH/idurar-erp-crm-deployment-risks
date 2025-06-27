@@ -1,6 +1,5 @@
-const custom = require('@/controllers/pdfController');
 const mongoose = require('mongoose');
-const path = require('path'); // Добавлено для работы с путями к файлу
+const path = require('path');
 
 module.exports = downloadPdf = async (req, res, { directory, id }) => {
   try {
@@ -12,12 +11,10 @@ module.exports = downloadPdf = async (req, res, { directory, id }) => {
         _id: id,
       }).exec();
 
-      // Выбрасываем ошибку, если нет результата
       if (!result) {
         throw { name: 'ValidationError' };
       }
 
-      // Проверяем, существует ли PDF для данного документа
       if (!result.pdf) {
         return res.status(404).json({
           success: false,
@@ -26,12 +23,10 @@ module.exports = downloadPdf = async (req, res, { directory, id }) => {
         });
       }
 
-      // Получаем имя PDF-файла
-      const pdfFileName = result.pdf; // Это имя файла PDF (предполагается, что оно там хранится)
-      const pdfDirectory = process.env.PDF_STORAGE_PATH; // Путь к директории
-      const fullPath = path.join(pdfDirectory, pdfFileName); // Полный путь к файлу
+      const pdfFileName = result.pdf;
+      const pdfDirectory = process.env.PDF_STORAGE_PATH;
+      const fullPath = path.join(pdfDirectory, pdfFileName);
 
-      // Загружаем PDF-файл
       return res.download(fullPath, (error) => {
         if (error) {
           return res.status(500).json({
@@ -50,7 +45,6 @@ module.exports = downloadPdf = async (req, res, { directory, id }) => {
       });
     }
   } catch (error) {
-    // Если ошибка возникает из-за валидации Mongoose
     if (error.name == 'ValidationError') {
       return res.status(400).json({
         success: false,
@@ -59,7 +53,6 @@ module.exports = downloadPdf = async (req, res, { directory, id }) => {
         message: 'Required fields are not supplied',
       });
     } else if (error.name == 'BSONTypeError') {
-      // Если ошибка возникает из-за недопустимого ID
       return res.status(400).json({
         success: false,
         result: null,
@@ -67,7 +60,6 @@ module.exports = downloadPdf = async (req, res, { directory, id }) => {
         message: 'Invalid ID',
       });
     } else {
-      // Серверная ошибка
       return res.status(500).json({
         success: false,
         result: null,
