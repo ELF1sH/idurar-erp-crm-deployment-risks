@@ -1,7 +1,7 @@
 const createCRUDController = require('@/controllers/middlewaresControllers/createCRUDController');
 const methods = createCRUDController('Invoice');
 
-const sendMail = require('./sendMail');
+const sendMail = require('./mail');
 const create = require('./create');
 const summary = require('./summary');
 const update = require('./update');
