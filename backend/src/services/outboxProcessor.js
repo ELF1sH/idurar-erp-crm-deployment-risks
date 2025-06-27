@@ -1,6 +1,7 @@
 const Outbox = require('@/models/appModels/Outbox');
 const sendMail = require("@/services/sendMail");
 const logger = require("@/utils/logger");
+const mongoose = require('mongoose');
 
 class OutboxProcessor {
   constructor() {
@@ -10,6 +11,10 @@ class OutboxProcessor {
   }
 
   async processOutbox() {
+    if (mongoose.connection.readyState !== 1) {
+      return;
+    }
+
     if (this.isProcessing) {
       console.log('Outbox уже обрабатывается, пропускаем...');
       return;
